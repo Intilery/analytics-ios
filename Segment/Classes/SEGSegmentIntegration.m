@@ -8,6 +8,7 @@
 #import "SEGStorage.h"
 #import "SEGMacros.h"
 #import "SEGState.h"
+#import "SEGAnalyticsConfiguration.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -84,7 +85,7 @@ NSUInteger const kSEGBackgroundTaskInvalid = 0;
 #else
         self.flushTaskID = 0; // the actual value of UIBackgroundTaskInvalid
 #endif
-        
+
         // load traits & user from disk.
         [self loadUserId];
         [self loadTraits];
@@ -107,9 +108,9 @@ NSUInteger const kSEGBackgroundTaskInvalid = 0;
                                                 selector:@selector(flush)
                                                 userInfo:nil
                                                  repeats:YES];
-        
+
         [NSRunLoop.mainRunLoop addTimer:self.flushTimer
-                                forMode:NSDefaultRunLoopMode];        
+                                forMode:NSDefaultRunLoopMode];
     }
     return self;
 }
@@ -129,7 +130,7 @@ NSUInteger const kSEGBackgroundTaskInvalid = 0;
     [self endBackgroundTask];
 
     seg_dispatch_specific_sync(_backgroundTaskQueue, ^{
-        
+
         id<SEGApplicationProtocol> application = [self.analytics oneTimeConfiguration].application;
         if (application && [application respondsToSelector:@selector(seg_beginBackgroundTaskWithName:expirationHandler:)]) {
             self.flushTaskID = [application seg_beginBackgroundTaskWithName:@"Segmentio.Flush"
@@ -291,11 +292,12 @@ NSUInteger const kSEGBackgroundTaskInvalid = 0;
         [payload setValue:[self integrationsDictionary:integrations] forKey:@"integrations"];
 
         [payload setValue:[context copy] forKey:@"context"];
+        [payload setValue:[SEGState sharedInstance].configuration.writeKey forKey:@"writeKey"];
 
         SEGLog(@"%@ Enqueueing action: %@", self, payload);
-        
+
         NSDictionary *queuePayload = [payload copy];
-        
+
         if (self.configuration.experimental.rawSegmentModificationBlock != nil) {
             NSDictionary *tempPayload = self.configuration.experimental.rawSegmentModificationBlock(queuePayload);
             if (tempPayload == nil) {
@@ -340,7 +342,7 @@ NSUInteger const kSEGBackgroundTaskInvalid = 0;
         }
         [self sendData:batch];
     };
-    
+
     [self dispatchBackground:^{
         if ([self.queue count] == 0) {
             SEGLog(@"%@ No queued API calls to flush.", self);
@@ -414,7 +416,7 @@ NSUInteger const kSEGBackgroundTaskInvalid = 0;
             self.batchRequest = nil;
             [self endBackgroundTask];
         };
-        
+
         [self dispatchBackground:completion];
     }];
 

@@ -5,7 +5,7 @@
 // NOTE: `/` at the end kind of screws things up. So don't use it
 //#define SEGMENT_API_BASE [NSURL URLWithString:@"https://api-segment-io-5fsaj1xnikhp.runscope.net/v1"]
 //#define SEGMENT_CDN_BASE [NSURL URLWithString:@"https://cdn-segment-com-5fsaj1xnikhp.runscope.net/v1"]
-#define SEGMENT_API_BASE [NSURL URLWithString:@"https://api.segment.io/v1"]
+#define SEGMENT_API_BASE [NSURL URLWithString:@"https://events.intilery.com/cdp/events/segment/mobile/batch"]
 #define SEGMENT_CDN_BASE [NSURL URLWithString:@"https://cdn-settings.segment.com/v1"]
 
 NS_ASSUME_NONNULL_BEGIN
@@ -20,7 +20,7 @@ NS_SWIFT_NAME(HTTPClient)
 @property (nonatomic, weak)  id<NSURLSessionDelegate> httpSessionDelegate;
 
 + (SEGRequestFactory)defaultRequestFactory;
-+ (NSString *)authorizationHeader:(NSString *)writeKey;
+//+ (NSString *)authorizationHeader:(NSString *)writeKey;
 
 - (instancetype)initWithRequestFactory:(SEGRequestFactory _Nullable)requestFactory;
 
@@ -30,7 +30,7 @@ NS_SWIFT_NAME(HTTPClient)
  * It will respond with retry = YES if the batch should be reuploaded at a later time.
  * It will ask to retry for json errors and 3xx/5xx codes, and not retry for 2xx/4xx response codes.
  * NOTE: You need to re-dispatch within the completionHandler onto a desired queue to avoid threading issues.
- * Completion handlers are called on a dispatch queue internal to SEGHTTPClient. 
+ * Completion handlers are called on a dispatch queue internal to SEGHTTPClient.
  */
 - (nullable NSURLSessionUploadTask *)upload:(JSON_DICT)batch forWriteKey:(NSString *)writeKey completionHandler:(void (^)(BOOL retry))completionHandler;
 
